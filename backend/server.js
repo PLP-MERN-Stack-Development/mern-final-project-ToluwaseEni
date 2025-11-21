@@ -10,7 +10,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:5173", "https://your-netlify-app.netlify.app"],
+    origin: ["http://localhost:3000", "http://localhost:5173", "https://glittery-griffin-71ef68.netlify.app"],
     credentials: true
 }));
 

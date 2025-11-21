@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://mern-final-project-toluwaseeni-1.onrender.com/api",
   withCredentials: true, // allows cookies / auth headers to pass
 });
 
