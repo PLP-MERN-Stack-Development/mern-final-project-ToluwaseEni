@@ -11,16 +11,36 @@ export default function ProductGrid({ products, onAdd }) {
     );
   }
 
-  // Normalize image URLs for safety
-  const processed = products.map((p) => ({
-    ...p,
-    image: p.image?.startsWith("http")
-      ? p.image
-      : `http://localhost:5000/${p.image?.replace(/^\//, "")}`,
-  }));
+  // Render backend base URL
+  const BASE_URL = "https://mern-final-project-toluwaseeni-1.onrender.com";
+
+  // Normalize every product image
+  const processed = products.map((p) => {
+    if (!p.image) return p;
+
+    let img = p.image.replace(/\\/g, "/").replace(/^\//, "");
+
+    // If already a full URL, keep it
+    if (img.startsWith("http")) {
+      return { ...p, image: img };
+    }
+
+    // Otherwise prefix backend domain
+    return { ...p, image: `${BASE_URL}/${img}` };
+  });
 
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div
+      className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        md:grid-cols-3
+        lg:grid-cols-4
+        gap-6
+        mt-6
+      "
+    >
       {processed.map((p) => (
         <ProductCard key={p._id} product={p} onAdd={onAdd} />
       ))}

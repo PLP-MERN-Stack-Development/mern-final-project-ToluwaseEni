@@ -9,15 +9,19 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const { addToCart: addToCartContext } = useContext(CartContext) || {};
 
+  // Render backend URL
+  const BASE_URL = "https://mern-final-project-toluwaseeni-1.onrender.com";
+
   useEffect(() => {
     const loadProduct = async () => {
       try {
         const res = await API.get(`/products/${id}`);
-        const p = res.data;
+        let p = res.data;
 
-        p.image = p.image?.startsWith("http")
-          ? p.image
-          : `http://localhost:5000/${p.image.replace(/^\//, "")}`;
+        if (p?.image) {
+          let img = p.image.replace(/\\/g, "/").replace(/^\//, "");
+          p.image = img.startsWith("http") ? img : `${BASE_URL}/${img}`;
+        }
 
         setProduct(p);
       } catch (err) {
@@ -48,6 +52,7 @@ export default function ProductDetails() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <main className="max-w-4xl mx-auto bg-white rounded-lg shadow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
         {/* IMAGE */}
         <div className="flex items-center justify-center">
           {product.image ? (

@@ -3,7 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import API from "../services/api";
 import ProductGrid from "../components/ProductGrid";
 import { CartContext } from "../context/CartContext";
-import toast from "react-hot-toast";   // ✅ ADD TOAST
+import toast from "react-hot-toast";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
@@ -13,22 +13,33 @@ export default function Shop() {
   const [category, setCategory] = useState("All");
   const [loading, setLoading] = useState(true);
 
-  const { addToCart } = useContext(CartContext); // already correct
+  const { addToCart } = useContext(CartContext);
+
+  // 🔥 Use your Render backend URL
+  const BASE_URL = "https://mern-final-project-toluwaseeni-1.onrender.com";
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await API.get("/products");
 
-        // Fix image paths and normalize
-        const processed = res.data.map((p) => ({
-          ...p,
-          image: p.image?.startsWith("http")
-            ? p.image
-            : `http://localhost:5000/${p.image
-                .replace(/\\/g, "/")
-                .replace(/^\//, "")}`,
-        }));
+        const processed = res.data.map((p) => {
+          let img = p.image || "";
+
+          // Normalize slashes
+          img = img.replace(/\\/g, "/").replace(/^\//, "");
+
+          // If already a full URL keep it
+          if (img.startsWith("http")) {
+            return { ...p, image: img };
+          }
+
+          // Otherwise prefix with backend domain
+          return {
+            ...p,
+            image: `${BASE_URL}/${img}`,
+          };
+        });
 
         setProducts(processed);
         setFiltered(processed);
@@ -69,7 +80,7 @@ export default function Shop() {
     setFiltered(list);
   }, [searchQ, category, products]);
 
-  // ✅ Wrap addToCart with Toast
+  // Toast wrapper
   const handleAddToCart = (product) => {
     addToCart(product);
     toast.success(`${product.name} added to cart!`);
@@ -109,11 +120,7 @@ export default function Shop() {
           </select>
         </div>
 
-        {/* Product Grid */}
-        <ProductGrid
-          products={filtered}
-          onAdd={handleAddToCart}   // ✅ FIX: NOW SHOWS TOAST
-        />
+        <ProductGrid products={filtered} onAdd={handleAddToCart} />
       </main>
     </div>
   );

@@ -3,11 +3,15 @@ import React, { useEffect, useState, useContext } from "react";
 import API from "../services/api";
 import ProductGrid from "../components/ProductGrid";
 import { CartContext } from "../context/CartContext";
+import toast from "react-hot-toast";
 
 export default function NewArrivals() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useContext(CartContext);
+
+  // 🔥 Use your Render backend URL
+  const BASE_URL = "https://mern-final-project-toluwaseeni-1.onrender.com";
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -19,13 +23,24 @@ export default function NewArrivals() {
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
 
-        // Fix image paths
-        const processed = sorted.slice(0, 12).map((p) => ({
-          ...p,
-          image: p.image?.startsWith("http")
-            ? p.image
-            : `http://localhost:5000/${p.image.replace(/^\//, "")}`,
-        }));
+        // Fix broken image paths for deployment
+        const processed = sorted.slice(0, 12).map((p) => {
+          let img = p.image || "";
+
+          // normalize slashes
+          img = img.replace(/\\/g, "/").replace(/^\//, "");
+
+          // if already full URL, keep it
+          if (img.startsWith("http")) {
+            return { ...p, image: img };
+          }
+
+          // otherwise prefix backend domain
+          return {
+            ...p,
+            image: `${BASE_URL}/${img}`,
+          };
+        });
 
         setProducts(processed);
       } catch (error) {
@@ -37,6 +52,12 @@ export default function NewArrivals() {
 
     loadProducts();
   }, []);
+
+  // Add-to-cart with toast
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    toast.success(`${product.name} added to cart!`);
+  };
 
   if (loading) {
     return (
@@ -56,7 +77,7 @@ export default function NewArrivals() {
         {products.length === 0 ? (
           <p className="text-gray-600 text-lg">No new products available.</p>
         ) : (
-          <ProductGrid products={products} onAdd={addToCart} />
+          <ProductGrid products={products} onAdd={handleAddToCart} />
         )}
       </main>
     </div>

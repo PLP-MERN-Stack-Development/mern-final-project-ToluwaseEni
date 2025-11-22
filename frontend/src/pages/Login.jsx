@@ -2,43 +2,50 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const { login, loading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const res = await login(email, password);
 
+    // ❌ Invalid login → toast error
     if (!res.success) {
-      setMessage(res.message);
+      toast.error(res.message || "Login failed");
       return;
     }
 
-    const loggedUser = res.user;
+    // Clear form
+    setEmail("");
+    setPassword("");
 
-    setMessage(`Login successful! Welcome ${loggedUser.name}`);
+    const user = res.user;
 
+    // ✅ Success toast
+    toast.success(`Welcome back, ${user.name}!`, {
+      duration: 1500,
+    });
+
+    // Redirect roles
     setTimeout(() => {
-      if (loggedUser.role === "designer") {
+      if (user.role === "designer") {
         navigate("/dashboard");
       } else {
         navigate("/shop");
       }
-    }, 800);
+    }, 600);
   };
 
   return (
     <div className="max-w-md mx-auto p-6 shadow rounded bg-white">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
-
-      {message && <p className="mb-3 text-green-600">{message}</p>}
 
       <form onSubmit={handleSubmit}>
         <input
@@ -61,9 +68,19 @@ const Login = () => {
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white p-2 rounded"
+          disabled={loading}
+          className={`w-full text-white p-2 rounded transition 
+            ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
+          `}
         >
-          Login
+          {loading ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Logging in...</span>
+            </div>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
     </div>
